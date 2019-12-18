@@ -10,43 +10,13 @@
 </head>
 
 <body>
-    <div class="modal_block isVisible">
-        <div class="news_block">
-            <div class="image_block">
-                <img class="modal_image" src="">
-            </div>
-            <div class="text_block">
-                <div class="button_block">
-                    <button class="close_button" onclick="closeModalBlock()">Х</button>
-                </div>
-                <p class="news_text">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Suscipit dignissimos
-                    numquam
-                    rem cum obcaecati praesentium, fuga esse voluptatem, pariatur quidem exercitationem tempora a, nobis
-                    ad
-                    nostrum explicabo odit! Ducimus, reiciendis?</p>
-            </div>
-        </div>
+    <div id="app" class="grid" :style="grid_template_areas">
+        <div v-for="item in activeNews" v-if="isExist(item.id)" class="image" :style="{'grid-area': 'i' + item.id}">Image {{item.id}}</div>
+        <div v-for="item in activeNews" class="text" :style="{'grid-area': 't' + item.id}">Text {{item.id}}</div>
     </div>
 
-    <div class="news_grid">
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Cute Summer Burger.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Cute Summer Burger.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Cute Summer Burger.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Cute Summer Burger.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Summer food-01.svg"></div>
-        <div onclick="openNews(this)"><img src="./pictures/Cute Summer Burger.svg"></div>
-    </div>
-
-    <script src="./script.js"></script>
+    <script src="./vue/vue.js"></script>
+    <script src="./app.js"></script>
 </body>
 
 </html>

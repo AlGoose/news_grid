@@ -1,116 +1,190 @@
-function openNews(elem) {
-    let img = elem.querySelector('img');
-    let modalImage = document.getElementsByClassName("modal_image");
-    modalImage[0].src = img.src;
+let TEMPLATES = [
+    {
+        schema: ['t'],
+        imageType: 0
+    },
+    {
+        schema: ['t', 'i'],
+        imageType: 0
+    },
+    {
+        schema: ['i', 't'],
+        imageType: 0
+    },
+    {
+        schema: ['i', 'i', 't'],
+        imageType: 0
+    },
+    {
+        schema: ['t', 'i', 'i'],
+        imageType: 0
+    },
+    {
+        schema: [
+            ['i'],
+            ['t']
+        ],
+        imageType: 0
+    },
+    {
+        schema: [
+            ['i', 't'],
+            ['i', 't']
+        ],
+        imageType: 0
+    },
+    {
+        schema: [
+            ['t', 'i'],
+            ['t', 'i']
+        ],
+        imageType: 0
+    },
+]
 
-    // console.log(elem.getBoundingClientRect().x);
-    // console.log(elem.getBoundingClientRect().y);
-    // console.log(elem.getBoundingClientRect());
-    // console.log(document.documentElement.clientWidth);
-    // console.log(document.documentElement.clientHeight);
+let NEWS = [
+    {
+        id: 1,
+    },
+    {
+        id: 2,
+    },
+    {
+        id: 3,
+    },
+    {
+        id: 4,
+    },
+    {
+        id: 5,
+    },
+    {
+        id: 6,
+    },
+    {
+        id: 7,
+    },
+    {
+        id: 8,
+    },
+    {
+        id: 9,
+    },
+    {
+        id: 10,
+    },
+];
 
-    let coords = getGridCoord(elem);
-    let windowWidth = document.documentElement.clientWidth;
+function srand(seed) {
+    if (typeof seed === 'string') {
+        str = seed;
+        seed = 0xFF;
+        for (let i = 0; i < str.length; i++) {
+            seed ^= str.charCodeAt(i);
+        }
+    }
 
-    if (windowWidth <= 1280) {
-        size_one(coords);
-    } else if (windowWidth > 1280 && windowWidth <= 1440) {
-        size_two(coords);
-    } else {
-        size_three(coords);
+    return function (min, max) {
+        max = max || 1;
+        min = min || 0;
+        seed = (seed * 9301 + 49297) % 233280;
+
+        return min + (seed / 233280) * (max - min);
     }
 }
 
-function closeModalBlock() {
-    let elem = document.getElementsByClassName("modal_block");
-    elem[0].classList.toggle("isVisible");
+function gridArrayToGridString(gridTemplate) {
+    let gridString = '';
+
+    for (let i = 0; i < gridTemplate.length; i++) {
+        let rowString = "'" + gridTemplate[i].join(' ') + "'";
+        gridString += rowString + '\n';
+    }
+
+    return gridString;
 }
 
-function getGridCoord(elem) {
-    let xCoord = Math.round(Math.abs(elem.getBoundingClientRect().x) / 335) + 1;
-    let yCoord = Math.round(Math.abs(elem.getBoundingClientRect().y) / 310) + 1;
-    if (yCoord === 4) {
-        yCoord = 3;
+function arrayToGridArray(columnsCount, rowsCount) {
+    let gridTemplate = new Array(rowsCount);
+    for (let i = 0; i < rowsCount; i++) {
+        gridTemplate[i] = new Array(columnsCount).fill('.');
     }
-    return [xCoord, yCoord];
+
+    let allowTemplates = [];
+    let newsCurrentIndex = 0;
+    let newsCount = NEWS.length;
+    let isNewsGone = false;
+
+    for (let gridTemplateRow = 0; gridTemplateRow < gridTemplate.length; gridTemplateRow++) {
+        for (let gridTemplateColumn = 0; gridTemplateColumn < gridTemplate[gridTemplateRow].length; gridTemplateColumn++) {
+            if (gridTemplate[gridTemplateRow][gridTemplateColumn] !== '.') continue;
+
+            allowTemplates = TEMPLATES.filter(template => {
+                let isFree = true;
+                
+                if (typeof (template.schema[0]) === 'object') {
+                    if (!(gridTemplateRow + template.schema.length <= gridTemplate.length && gridTemplateColumn + template.schema[0].length <= gridTemplate[gridTemplateRow].length)) {
+                        return false;
+                    }
+
+                    for (let n = 0; n < template.schema.length; n++) {
+                        for (let m = 0; m < template.schema[0].length; m++) {
+                            if (gridTemplate[gridTemplateRow + n][gridTemplateColumn + m] !== '.') {
+                                isFree = false;
+                            }
+                        }
+                    }
+                } else {
+                    if (!(gridTemplateColumn + template.schema.length <= gridTemplate[gridTemplateRow].length)) {
+                        return false;
+                    }
+
+                    for (let m = 0; m < template.schema[0].length; m++) {
+                        if (gridTemplate[gridTemplateRow][gridTemplateColumn + m] !== '.') {
+                            isFree = false;
+                        }
+                    }
+                }
+
+                return isFree;
+            })
+
+            if (newsCurrentIndex < newsCount) {
+                let rand = srand(NEWS[newsCurrentIndex].id);
+                let num = Math.trunc(rand(0, allowTemplates.length - 1));
+                let template = allowTemplates[num];
+
+                if (typeof (template.schema[0]) === 'object') {
+                    for (let n = 0; n < template.schema.length; n++) {
+                        for (let m = 0; m < template.schema[0].length; m++) {
+                            gridTemplate[gridTemplateRow + n][gridTemplateColumn + m] = template.schema[n][m] + NEWS[newsCurrentIndex].id;
+                        }
+                    }
+                } else {
+                    for (let m = 0; m < template.schema.length; m++) {
+                        gridTemplate[gridTemplateRow][gridTemplateColumn + m] = template.schema[m] + NEWS[newsCurrentIndex].id;
+                    }
+                }
+
+                newsCurrentIndex++;
+            } else {
+                isNewsGone = true;
+            }
+
+            allowTemplates = [];
+
+            if (isNewsGone) {
+                break;
+            }
+        }
+        if (isNewsGone) {
+            break;
+        }
+    }
+
+    return gridTemplate;
 }
 
-function size_one(coords) {
-    let gridRow;
-    let gridColumn = "grid-column: 1 / 4;";
-    let flexDirection = "flex-direction: row";
-
-    if (coords[1] == 1 || coords[1] == 2) {
-        gridRow = "grid-row: 1 / 3;";
-    } else {
-        gridRow = "grid-row: 2 / 4;";
-    }
-
-    if (coords[0] == 3) {
-        flexDirection = "flex-direction: row-reverse;";
-        document.getElementsByClassName("button_block")[0].style.cssText = "justify-content: flex-start;";
-    } else {
-        document.getElementsByClassName("button_block")[0].style.cssText = "justify-content: flex-end;";
-    }
-
-    document.getElementsByClassName("news_block")[0].style.cssText = gridColumn + gridRow + flexDirection;
-    document.getElementsByClassName("modal_block")[0].classList.toggle("isVisible");
-}
-
-function size_two(coords) {
-    let gridRow;
-    let gridColumn;
-    let flexDirection = "flex-direction: row";
-
-    if (coords[0] == 1 || coords[0] == 3) {
-        gridColumn = "grid-column: 1 / 4;";
-    } else {
-        gridColumn = "grid-column: 2 / 5;";
-    }
-
-    if (coords[1] == 1 || coords[1] == 2) {
-        gridRow = "grid-row: 1 / 3;";
-    } else {
-        gridRow = "grid-row: 2 / 4;";
-    }
-
-    if (coords[0] == 3 || coords[0] == 4) {
-        flexDirection = "flex-direction: row-reverse;";
-        document.getElementsByClassName("button_block")[0].style.cssText = "justify-content: flex-start;";
-    } else {
-        document.getElementsByClassName("button_block")[0].style.cssText = "justify-content: flex-end;";
-    }
-
-    document.getElementsByClassName("news_block")[0].style.cssText = gridColumn + gridRow + flexDirection;
-    document.getElementsByClassName("modal_block")[0].classList.toggle("isVisible");
-}
-
-function size_three(coords) {
-    let gridRow;
-    let gridColumn;
-    let flexDirection = "flex-direction: row";
-
-    if (coords[0] == 1) {
-        gridColumn = "grid-column: 1 / 4;";
-    } else if (coords[0] == 2 || coords[0] == 4) {
-        gridColumn = "grid-column: 2 / 5;";
-    } else {
-        gridColumn = "grid-column: 3 / 6;";
-    }
-
-    if (coords[1] == 1 || coords[1] == 2) {
-        gridRow = "grid-row: 1 / 3;";
-    } else {
-        gridRow = "grid-row: 2 / 4;";
-    }
-
-    if (coords[0] == 4 || coords[0] == 5) {
-        flexDirection = "flex-direction: row-reverse;";
-        document.getElementsByClassName("button_block")[0].style.cssText = "justify-content: flex-start;";
-    } else {
-        document.getElementsByClassName("button_block")[0].style.cssText = "justify-content: flex-end;";
-    }
-
-    document.getElementsByClassName("news_block")[0].style.cssText = gridColumn + gridRow + flexDirection;
-    document.getElementsByClassName("modal_block")[0].classList.toggle("isVisible");
-}
+let gridArray = arrayToGridArray(5, 4);
+let gridString = gridArrayToGridString(gridArray);
+console.log(gridString);
