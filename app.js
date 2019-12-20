@@ -1,3 +1,4 @@
+
 new Vue({
     el: '#app',
     data: {
@@ -126,35 +127,29 @@ new Vue({
                 isActive: false,
             }
         ],
-        gridTemplate: "",
-        newsCurrentIndex: 0,
         blocksCount: 1,
-        windowWidth: 1920, // в эту переменную будем записывать ширину окна. Она нужна чтобы за ней установить слежение т.к. изменения document.documentElement.clientWidth vue не отслеживает.
-        isNewsGone: false
+        isNewsGone: false,
+        windowWidth: 0,
     },
 
     created: function () {
+        this.windowWidth = document.documentElement.clientWidth;
         window.addEventListener('resize', this.resize);
     },
 
-    destroyed: function () {
-        // window.removeEventListener('resize', this.resize);
-        // window.addEventListener('scroll', this.scroll);
-    },
-
     computed: {
-/*вот теперь это выглядит непонятно. Но по сути так написавть правильно. Возвращать не строку а объект, и назвать его по смыслу. А то вдруг что то еще будет меняться кроме grid-template-areas*/
         gridStyle() {
             return {
                 'grid-template-areas': this.gridTemplateAreas,
             }
         },
+
         activeNews: function () {
             return this.news.filter((item) => {
                 return item.isActive;
             });
         },
-/* следующие 2 метода просятся на переделку. слишком схожий код. может быть мы даже зря вынесли его в computed*/
+
         gridColumnsCount: function () {
             if (this.windowWidth <= 1280) {
                 return 3;
@@ -181,14 +176,24 @@ new Vue({
                 return 4;
             }
         },
-/**Этот метод ничего не делает.*/
+
         gridTemplateAreas: function () {
             return gridArrayToGridString(this.gridArray);
         },
 
         gridArray: function () {
+            console.log("Here");
             // debugger;
             let resultGrid = [];
+            let newsCount = this.news.length;
+            let newsCurrentIndex = 0;
+            this.isNewsGone = false;
+
+            this.news.forEach(element => {
+                if (element.isActive) {
+                    element.isActive = false;
+                }
+            });
 
             for (let i = 0; i < this.blocksCount; i++) {
                 let block = new Array(this.gridRowsCount);
@@ -197,8 +202,6 @@ new Vue({
                 }
 
                 let allowTemplates = [];
-                let newsCount = this.news.length;
-                // let isNewsGone = false;
 
                 for (let blockRow = 0; blockRow < this.gridRowsCount; blockRow++) {
                     for (let blockColumn = 0; blockColumn < this.gridColumnsCount; blockColumn++) {
@@ -210,24 +213,22 @@ new Vue({
                         });
 
                         /**Смотрим есть ли новость в пуле */
-                        if (this.newsCurrentIndex < newsCount) {
+                        if (newsCurrentIndex < newsCount) {
                             /** Выбираем шаблон */
-                            let rand = this.srand(this.news[this.newsCurrentIndex].id);
+                            let rand = this.srand(this.news[newsCurrentIndex].id);
                             let num = Math.trunc(rand(0, allowTemplates.length - 1));
                             let template = allowTemplates[num];
 
                             /** Добавляем выбранный шаблон */
-                            addPatternToGridArray(block, template.pattern, blockRow, blockColumn, this.news[this.newsCurrentIndex].id);
+                            addPatternToGridArray(block, template.pattern, blockRow, blockColumn, this.news[newsCurrentIndex].id);
 
-                            this.news[this.newsCurrentIndex].template = template;
-                            this.news[this.newsCurrentIndex].imageExist = this.news[this.newsCurrentIndex].template.pattern.flat().includes('i');
-                            this.news[this.newsCurrentIndex].isActive = true;
-                            this.newsCurrentIndex++;
+                            this.news[newsCurrentIndex].template = template;
+                            this.news[newsCurrentIndex].imageExist = this.news[newsCurrentIndex].template.pattern.flat().includes('i');
+                            this.news[newsCurrentIndex].isActive = true;
+                            newsCurrentIndex++;
                         } else {
                             this.isNewsGone = true;
                         }
-
-                        allowTemplates = [];
 
                         if (this.isNewsGone) {
                             break;
@@ -240,7 +241,6 @@ new Vue({
 
                 resultGrid = resultGrid.concat(block);
             }
-
             return resultGrid;
         }
     },
@@ -264,70 +264,16 @@ new Vue({
             }
         },
 
-        /** Перерисовка сети при изменении размеров окна */
-        // resize: function () {
-        //     // debugger;
-        //     if (document.documentElement.clientWidth <= 1280) {
-        //         console.log("3x6 MODE");
-        //         this.gridColumnsCount = 3;
-        //         this.gridRowsCount = 6;
-        //     }
-
-        //     if (document.documentElement.clientWidth > 1280 && document.documentElement.clientWidth <= 1440) {
-        //         console.log("4x5 MODE");
-        //         this.gridColumnsCount = 4;
-        //         this.gridRowsCount = 5;
-        //     }
-
-        //     if (document.documentElement.clientWidth > 1440) {
-        //         console.log("5x4 MODE");
-        //         this.gridColumnsCount = 5;
-        //         this.gridRowsCount = 4;
-        //     }
-
-        //     /** Высчитываем ~новый размер сетки и перерисовываем */
-        //     let total = this.currentHeight * this.currentWidth;
-        //     let blockSize = this.gridColumnsCount * this.gridRowsCount;
-        //     let newGridRowsCount = Math.round(total / blockSize) * this.gridRowsCount;
-
-        //     this.newsCurrentIndex = 0;
-        //     this.currentHeight = newGridRowsCount;
-        //     this.currentWidth = this.gridColumnsCount;
-
-        //     this.news.forEach(element => {
-        //         if (element.isActive) {
-        //             element.isActive = false;
-        //         }
-        //     });
-        //     this.stop = false;
-        //     // debugger;
-        //     this.renderGrid(this.gridColumnsCount, newGridRowsCount);
-        //     let elem = document.getElementsByClassName('grid')[0];
-        //     elem.style.cssText =
-        //         `grid-template-areas: ${this.gridTemplate};
-        //             grid-template-rows: repeat(${this.currentHeight}, 300px);`;
-        // },
-
         resize: function () {
             clearTimeout(this.timerDebounce);
             this.timerDebounce = setTimeout(() => {
-                console.log('RENDER');
                 this.windowWidth = document.documentElement.clientWidth;
-            }, 500);
+            }, 300);
         },
 
         addBlock: function () {
             if (this.isNewsGone) return;
-
-            this.newsCurrentIndex = 0;
-            this.news.forEach(element => {
-                if (element.isActive) {
-                    element.isActive = false;
-                }
-            });
             this.blocksCount++;
-
-            console.log(this.blocksCount);
         }
     }
 })

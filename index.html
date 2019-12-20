@@ -11,7 +11,6 @@
 
 <body>
     <div id="app">
-        {{windowWidth}}
         <div class="grid" :style="gridStyle">
             <div v-for="item in activeNews" v-if="item.imageExist" class="image" :style="{'grid-area': 'i' + item.id}">Image {{item.id}}</div>
             <div v-for="item in activeNews" class="text" :style="{'grid-area': 't' + item.id}">Text {{item.id}}</div>
