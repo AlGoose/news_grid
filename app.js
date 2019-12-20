@@ -1,4 +1,3 @@
-
 new Vue({
     el: '#app',
     data: {
@@ -130,7 +129,7 @@ new Vue({
         gridTemplate: "",
         newsCurrentIndex: 0,
         blocksCount: 1,
-        windowWidth:1920,
+        windowWidth: 1920, // в эту переменную будем записывать ширину окна. Она нужна чтобы за ней установить слежение т.к. изменения document.documentElement.clientWidth vue не отслеживает.
         isNewsGone: false
     },
 
@@ -144,49 +143,45 @@ new Vue({
     },
 
     computed: {
-        gridStyle(){
+/*вот теперь это выглядит непонятно. Но по сути так написавть правильно. Возвращать не строку а объект, и назвать его по смыслу. А то вдруг что то еще будет меняться кроме grid-template-areas*/
+        gridStyle() {
             return {
-                'grid-template-areas':this.gridTemplateAreas,
-                'grid-template-columns':'repeat('+this.columnCount+',325px)',
-        }
+                'grid-template-areas': this.gridTemplateAreas,
+            }
         },
-        grid_template_areas: function () {
-            return "grid-template-areas: " + this.gridTemplateAreas;
-        },
-
         activeNews: function () {
             return this.news.filter((item) => {
                 return item.isActive;
             });
         },
-
+/* следующие 2 метода просятся на переделку. слишком схожий код. может быть мы даже зря вынесли его в computed*/
         gridColumnsCount: function () {
-            if ( this.windowWidth <= 1280) {
+            if (this.windowWidth <= 1280) {
                 return 3;
             }
 
-            if ( this.windowWidth > 1280 &&  this.windowWidth <= 1440) {
+            if (this.windowWidth > 1280 && this.windowWidth <= 1440) {
                 return 4;
             }
 
-            if ( this.windowWidth > 1440) {
+            if (this.windowWidth > 1440) {
                 return 5;
             }
         },
         gridRowsCount: function () {
-            if ( this.windowWidth <= 1280) {
+            if (this.windowWidth <= 1280) {
                 return 6;
             }
 
-            if ( this.windowWidth > 1280 &&  this.windowWidth <= 1440) {
+            if (this.windowWidth > 1280 && this.windowWidth <= 1440) {
                 return 5;
             }
 
-            if ( this.windowWidth > 1440) {
+            if (this.windowWidth > 1440) {
                 return 4;
             }
         },
-
+/**Этот метод ничего не делает.*/
         gridTemplateAreas: function () {
             return gridArrayToGridString(this.gridArray);
         },
@@ -245,6 +240,7 @@ new Vue({
 
                 resultGrid = resultGrid.concat(block);
             }
+
             return resultGrid;
         }
     },
@@ -312,16 +308,16 @@ new Vue({
         //             grid-template-rows: repeat(${this.currentHeight}, 300px);`;
         // },
 
-        resize: function() {
+        resize: function () {
             clearTimeout(this.timerDebounce);
-            this.timerDebounce = setTimeout( () =>{
+            this.timerDebounce = setTimeout(() => {
                 console.log('RENDER');
                 this.windowWidth = document.documentElement.clientWidth;
             }, 500);
         },
 
         addBlock: function () {
-            if(this.isNewsGone) return;
+            if (this.isNewsGone) return;
 
             this.newsCurrentIndex = 0;
             this.news.forEach(element => {
