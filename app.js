@@ -130,6 +130,7 @@ new Vue({
         gridTemplate: "",
         newsCurrentIndex: 0,
         blocksCount: 1,
+        windowWidth:1920,
         isNewsGone: false
     },
 
@@ -143,6 +144,12 @@ new Vue({
     },
 
     computed: {
+        gridStyle(){
+            return {
+                'grid-template-areas':this.gridTemplateAreas,
+                'grid-template-columns':'repeat('+this.columnCount+',325px)',
+        }
+        },
         grid_template_areas: function () {
             return "grid-template-areas: " + this.gridTemplateAreas;
         },
@@ -154,28 +161,28 @@ new Vue({
         },
 
         gridColumnsCount: function () {
-            if (document.documentElement.clientWidth <= 1280) {
+            if ( this.windowWidth <= 1280) {
                 return 3;
             }
 
-            if (document.documentElement.clientWidth > 1280 && document.documentElement.clientWidth <= 1440) {
+            if ( this.windowWidth > 1280 &&  this.windowWidth <= 1440) {
                 return 4;
             }
 
-            if (document.documentElement.clientWidth > 1440) {
+            if ( this.windowWidth > 1440) {
                 return 5;
             }
         },
         gridRowsCount: function () {
-            if (document.documentElement.clientWidth <= 1280) {
+            if ( this.windowWidth <= 1280) {
                 return 6;
             }
 
-            if (document.documentElement.clientWidth > 1280 && document.documentElement.clientWidth <= 1440) {
+            if ( this.windowWidth > 1280 &&  this.windowWidth <= 1440) {
                 return 5;
             }
 
-            if (document.documentElement.clientWidth > 1440) {
+            if ( this.windowWidth > 1440) {
                 return 4;
             }
         },
@@ -309,6 +316,7 @@ new Vue({
             clearTimeout(this.timerDebounce);
             this.timerDebounce = setTimeout( () =>{
                 console.log('RENDER');
+                this.windowWidth = document.documentElement.clientWidth;
             }, 500);
         },
 
