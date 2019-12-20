@@ -2,6 +2,7 @@
 new Vue({
     el: '#app',
     data: {
+        //TODO: Сделать конфиг с шаблонами и размерами возможных сеток
         templates: [
             {
                 pattern: ['t'],
@@ -130,11 +131,56 @@ new Vue({
         blocksCount: 1,
         isNewsGone: false,
         windowWidth: 0,
+        gridColumnsCount: 0,
+        gridRowsCount: 0
     },
 
     created: function () {
         this.windowWidth = document.documentElement.clientWidth;
-        window.addEventListener('resize', this.resize);
+        window.addEventListener('resize', this.resize); //TODO: Привязаться не к окну а к родительскому объекту (сетке?) Как?
+    },
+
+    mounted: function () {
+        //FIXME: Сетка отрисовывется быстрее ответа ---> текст и картинка не отображается на старте
+        let textPromises = [];
+        axios
+            .get('https://picsum.photos/v2/list?page=1&limit=20')
+            .then(response => {
+                console.log(response.data);
+                for(let i = 0; i < response.data.length; i++) {
+                    console.log(this.blocksCount);
+                    this.news[i].image = `https://picsum.photos/id/${response.data[i].id}/300/300`;
+                }
+            });
+
+        for (let i = 0; i < this.news.length; i++) {
+            textPromises.push(axios.get('https://litipsum.com/api/picture-of-dorian-gray/1'));
+        }
+        Promise.all(textPromises).then(values => {
+            console.log(values);
+            this.news.forEach((item, index) => {
+                item.text = values[index].data;
+            });
+        });
+    },
+
+    watch: {
+        windowWidth(newValue) {
+            if (newValue <= 1280) {
+                this.gridColumnsCount = 3;
+                this.gridRowsCount = 6;
+            }
+
+            if (newValue > 1280 && newValue <= 1440) {
+                this.gridColumnsCount = 4;
+                this.gridRowsCount = 5;
+            }
+
+            if (newValue > 1440) {
+                this.gridColumnsCount = 5;
+                this.gridRowsCount = 4;
+            }
+        }
     },
 
     computed: {
@@ -150,40 +196,12 @@ new Vue({
             });
         },
 
-        gridColumnsCount: function () {
-            if (this.windowWidth <= 1280) {
-                return 3;
-            }
-
-            if (this.windowWidth > 1280 && this.windowWidth <= 1440) {
-                return 4;
-            }
-
-            if (this.windowWidth > 1440) {
-                return 5;
-            }
-        },
-        gridRowsCount: function () {
-            if (this.windowWidth <= 1280) {
-                return 6;
-            }
-
-            if (this.windowWidth > 1280 && this.windowWidth <= 1440) {
-                return 5;
-            }
-
-            if (this.windowWidth > 1440) {
-                return 4;
-            }
-        },
-
         gridTemplateAreas: function () {
             return gridArrayToGridString(this.gridArray);
         },
 
         gridArray: function () {
             console.log("Here");
-            // debugger;
             let resultGrid = [];
             let newsCount = this.news.length;
             let newsCurrentIndex = 0;
@@ -264,10 +282,11 @@ new Vue({
             }
         },
 
-        resize: function () {
+        resize: function (el) {
             clearTimeout(this.timerDebounce);
             this.timerDebounce = setTimeout(() => {
                 this.windowWidth = document.documentElement.clientWidth;
+                console.log(this.windowWidth);
             }, 300);
         },
 
