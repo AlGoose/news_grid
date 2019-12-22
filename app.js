@@ -1,131 +1,106 @@
-
 new Vue({
     el: '#app',
     data: {
-        //TODO: Сделать конфиг с шаблонами и размерами возможных сеток
-        templates: [
-            {
-                pattern: ['t'],
-                imageType: 0
-            },
-            {
-                pattern: ['t', 'i'],
-                imageType: 0
-            },
-            {
-                pattern: ['i', 't'],
-                imageType: 0
-            },
-            {
-                pattern: ['i', 'i', 't'],
-                imageType: 0
-            },
-            {
-                pattern: ['t', 'i', 'i'],
-                imageType: 0
-            },
-            {
-                pattern: [
-                    ['i'],
-                    ['t']
-                ],
-                imageType: 0
-            },
-            {
-                pattern: [
-                    ['i', 't'],
-                    ['i', 't']
-                ],
-                imageType: 0
-            },
-            {
-                pattern: [
-                    ['t', 'i'],
-                    ['t', 'i']
-                ],
-                imageType: 0
-            },
-        ],
         news: [
             {
                 id: 1,
                 isActive: false,
+                image: []
             },
             {
                 id: 2,
                 isActive: false,
+                image: []
             },
             {
                 id: 3,
                 isActive: false,
+                image: []
             },
             {
                 id: 4,
                 isActive: false,
+                image: []
             },
             {
                 id: 5,
                 isActive: false,
+                image: []
             },
             {
                 id: 6,
                 isActive: false,
+                image: []
             },
             {
                 id: 7,
                 isActive: false,
+                image: []
             },
             {
                 id: 8,
                 isActive: false,
+                image: []
             },
             {
                 id: 9,
                 isActive: false,
+                image: []
             },
             {
                 id: 10,
                 isActive: false,
+                image: []
             },
             {
                 id: 11,
                 isActive: false,
+                image: []
             },
             {
                 id: 12,
                 isActive: false,
+                image: []
             },
             {
                 id: 13,
                 isActive: false,
+                image: []
             },
             {
                 id: 14,
                 isActive: false,
+                image: []
             },
             {
                 id: 15,
                 isActive: false,
+                image: []
             },
             {
                 id: 16,
                 isActive: false,
+                image: []
             },
             {
                 id: 17,
                 isActive: false,
+                image: []
             },
             {
                 id: 18,
                 isActive: false,
+                image: []
             },
             {
                 id: 19,
                 isActive: false,
+                image: []
             },
             {
                 id: 20,
                 isActive: false,
+                image: []
             }
         ],
         blocksCount: 1,
@@ -148,8 +123,9 @@ new Vue({
             .then(response => {
                 console.log(response.data);
                 for(let i = 0; i < response.data.length; i++) {
-                    console.log(this.blocksCount);
-                    this.news[i].image = `https://picsum.photos/id/${response.data[i].id}/300/300`;
+                    this.news[i].image[0] = `https://picsum.photos/id/${response.data[i].id}/325/300`;
+                    this.news[i].image[1] = `https://picsum.photos/id/${response.data[i].id}/325/610`;
+                    this.news[i].image[2] = `https://picsum.photos/id/${response.data[i].id}/660/300`;
                 }
             });
 
@@ -166,20 +142,12 @@ new Vue({
 
     watch: {
         windowWidth(newValue) {
-            if (newValue <= 1280) {
-                this.gridColumnsCount = 3;
-                this.gridRowsCount = 6;
-            }
-
-            if (newValue > 1280 && newValue <= 1440) {
-                this.gridColumnsCount = 4;
-                this.gridRowsCount = 5;
-            }
-
-            if (newValue > 1440) {
-                this.gridColumnsCount = 5;
-                this.gridRowsCount = 4;
-            }
+            GRID_SETTINGS.forEach(item => {
+                if (newValue >= item.width[0] && newValue < item.width[1]) {
+                    this.gridColumnsCount = item.itemsPerRow;
+                    this.gridRowsCount = item.rowsCount;
+                }
+            });
         }
     },
 
@@ -226,7 +194,7 @@ new Vue({
                         if (block[blockRow][blockColumn] !== '.') continue;
 
                         /** Создаем массив, подходящих на данную позицию, шаблонов */
-                        allowTemplates = this.templates.filter(template => {
+                        allowTemplates = TEMPLATES.filter(template => {
                             return isPatternApproach(block, template.pattern, blockRow, blockColumn);
                         });
 
@@ -282,17 +250,26 @@ new Vue({
             }
         },
 
-        resize: function (el) {
+        resize: function () {
             clearTimeout(this.timerDebounce);
             this.timerDebounce = setTimeout(() => {
                 this.windowWidth = document.documentElement.clientWidth;
-                console.log(this.windowWidth);
             }, 300);
         },
 
         addBlock: function () {
             if (this.isNewsGone) return;
             this.blocksCount++;
+        },
+        
+        //FIXME: Можно лучше сделать, правильнее. Как?
+        getImage: function (id) {
+            for (let i = 0; i < this.news.length; i++) {
+                if (this.news[i].id === id) {
+                    let imageType = this.news[i].template.imageType;
+                    return this.news[i].image[imageType];
+                }
+            }
         }
     }
 })

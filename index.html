@@ -13,7 +13,7 @@
     <div id="app">
         <div class="grid" :style="gridStyle">
             <div v-for="item in activeNews" v-if="item.imageExist" class="image" :style="{'grid-area': 'i' + item.id}">
-                <img :src="item.image" :alt="item.id">
+                <img :src="getImage(item.id)" :alt="item.id">
             </div>
             <div v-for="item in activeNews" class="text" :style="{'grid-area': 't' + item.id}">{{item.text}}</div>
         </div>
@@ -23,6 +23,7 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="./vue/vue.js"></script>
     <script src="./algorithms.js"></script>
+    <script src="./config.js"></script>
     <script src="./app.js"></script>
 </body>
 
