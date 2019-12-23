@@ -1,23 +1,22 @@
-//TODO: Сделать конфиг с шаблонами и размерами возможных сеток
 const TEMPLATES = [
     {
-        pattern: ['t'],
+        pattern: [['t']],
         imageType: 0
     },
     {
-        pattern: ['t', 'i'],
+        pattern: [['t', 'i']],
         imageType: 0
     },
     {
-        pattern: ['i', 't'],
+        pattern: [['i', 't']],
         imageType: 0
     },
     {
-        pattern: ['i', 'i', 't'],
+        pattern: [['i', 'i', 't']],
         imageType: 2
     },
     {
-        pattern: ['t', 'i', 'i'],
+        pattern: [['t', 'i', 'i']],/**TODO: сделать так везде*/
         imageType: 2
     },
     {
@@ -34,6 +33,36 @@ const TEMPLATES = [
         ],
         imageType: 1
     },
+    /** todo: Реализовать Уголки*/
+  /*  {
+        pattern: [
+            ['i', 'i'],
+            ['.', 't']
+        ],
+        imageType: 2
+    },
+    {
+        pattern: [
+            ['i', 'i'],
+            ['t', '.']
+        ],
+        imageType: 2
+    },
+    {
+        pattern: [
+            ['t', 'i'],
+            ['.', 'i']
+        ],
+        imageType: 1
+    },
+    {
+        pattern: [
+            ['i', 't'],
+            ['i', '.']
+        ],
+        imageType: 1
+    },
+    */
     {
         pattern: [
             ['t', 'i'],
@@ -47,16 +76,21 @@ const GRID_SETTINGS = [
     {
         itemsPerRow: 3,
         rowsCount: 6,
-        width: [0,1200]
+        width: [0,1330]
     },
     {
         itemsPerRow: 4,
         rowsCount: 5,
-        width: [1200, 1440]
+        width: [1330, 1665]
     },
     {
         itemsPerRow: 5,
         rowsCount: 4,
-        width: [1440, Number.MAX_SAFE_INTEGER]
+        width: [1665, 2000]
+    },
+    {
+        itemsPerRow: 6,
+        rowsCount: 3,
+        width: [2000, Number.MAX_SAFE_INTEGER]
     },
 ]

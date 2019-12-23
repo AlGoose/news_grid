@@ -13,10 +13,8 @@
   background-color: #96ff8c;
 }
 
-
 .text, .image {
   text-align: center;
-  overflow: hidden;
   overflow: hidden;
   font-size: 1.1em;
 }
@@ -28,4 +26,38 @@ button {
   background-color: rgb(226, 131, 131);
   border-radius: 20px;
   font-size: 2em;
+}
+
+.wrapper{
+    display: flex;
+}
+
+.sidebar{
+    box-sizing: border-box;
+    min-width: 230px;
+    height: 1000px;
+    flex-basis: 300px;
+    margin: 20px 35px;
+    background: #8ca0ff;
+}
+
+#app{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow-x: hidden;
+    align-items: center;
+}
+.popup{
+    display: none;
+    background-color: #ff705a;
+}
+.overlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
+    background-color: #00000025;
 }

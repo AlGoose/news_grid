@@ -1,147 +1,37 @@
 new Vue({
     el: '#app',
     data: {
-        news: [
-            {
-                id: 1,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 2,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 3,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 4,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 5,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 6,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 7,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 8,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 9,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 10,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 11,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 12,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 13,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 14,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 15,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 16,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 17,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 18,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 19,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 20,
-                isActive: false,
-                image: []
-            }
-        ],
+        showedNews:false,
+        news: [],
         blocksCount: 1,
         isNewsGone: false,
-        windowWidth: 0,
+        appWidth: 0,
         gridColumnsCount: 0,
-        gridRowsCount: 0
+        gridRowsCount: 0,
+
     },
 
     created: function () {
-        this.windowWidth = document.documentElement.clientWidth;
-        window.addEventListener('resize', this.resize); //TODO: Привязаться не к окну а к родительскому объекту (сетке?) Как?
+        this.appWidth = document.getElementById('app').offsetWidth;
+        ;
+        window.addEventListener('resize', this.resize);
     },
 
     mounted: function () {
-        //FIXME: Сетка отрисовывется быстрее ответа ---> текст и картинка не отображается на старте
-        let textPromises = [];
         axios
-            .get('https://picsum.photos/v2/list?page=1&limit=20')
+            .get('data.json')
             .then(response => {
-                console.log(response.data);
-                for(let i = 0; i < response.data.length; i++) {
-                    this.news[i].image[0] = `https://picsum.photos/id/${response.data[i].id}/325/300`;
-                    this.news[i].image[1] = `https://picsum.photos/id/${response.data[i].id}/325/610`;
-                    this.news[i].image[2] = `https://picsum.photos/id/${response.data[i].id}/660/300`;
-                }
+                this.news = response.data;
+                console.log(this.news);
+                this.news.forEach((item, index) => {
+                    Vue.set(this.news[index], 'isActive', false);
+                })
             });
-
-        for (let i = 0; i < this.news.length; i++) {
-            textPromises.push(axios.get('https://litipsum.com/api/picture-of-dorian-gray/1'));
-        }
-        Promise.all(textPromises).then(values => {
-            console.log(values);
-            this.news.forEach((item, index) => {
-                item.text = values[index].data;
-            });
-        });
     },
 
     watch: {
-        windowWidth(newValue) {
+        appWidth(newValue) {
+
             GRID_SETTINGS.forEach(item => {
                 if (newValue >= item.width[0] && newValue < item.width[1]) {
                     this.gridColumnsCount = item.itemsPerRow;
@@ -209,6 +99,12 @@ new Vue({
                             addPatternToGridArray(block, template.pattern, blockRow, blockColumn, this.news[newsCurrentIndex].id);
 
                             this.news[newsCurrentIndex].template = template;
+                            this.news[newsCurrentIndex].coords = {
+                                fr: blockRow + (this.blocksCount - 1) * this.gridRowsCount,
+                                lr: blockRow + template.pattern.length - 1 + (this.blocksCount - 1) * this.gridRowsCount,
+                                fc: blockColumn,
+                                lc: blockColumn + template.pattern[0].length - 1,
+                            };
                             this.news[newsCurrentIndex].imageExist = this.news[newsCurrentIndex].template.pattern.flat().includes('i');
                             this.news[newsCurrentIndex].isActive = true;
                             newsCurrentIndex++;
@@ -234,7 +130,7 @@ new Vue({
     methods: {
         srand: function (seed) {
             if (typeof seed === 'string') {
-                str = seed;
+                let str = seed;
                 seed = 0xFF;
                 for (let i = 0; i < str.length; i++) {
                     seed ^= str.charCodeAt(i);
@@ -242,6 +138,7 @@ new Vue({
             }
 
             return function (min, max) {
+                seed = Math.round(Math.random() * 10);
                 max = max || 1;
                 min = min || 0;
                 seed = (seed * 2 * 9301 + 49297) % 233280;
@@ -253,23 +150,17 @@ new Vue({
         resize: function () {
             clearTimeout(this.timerDebounce);
             this.timerDebounce = setTimeout(() => {
-                this.windowWidth = document.documentElement.clientWidth;
+
+                this.appWidth = document.getElementById('app').offsetWidth;
             }, 300);
         },
-
+        show(e) {
+            this.showedNews = e;
+            console.log(e)
+        },
         addBlock: function () {
             if (this.isNewsGone) return;
             this.blocksCount++;
         },
-        
-        //FIXME: Можно лучше сделать, правильнее. Как?
-        getImage: function (id) {
-            for (let i = 0; i < this.news.length; i++) {
-                if (this.news[i].id === id) {
-                    let imageType = this.news[i].template.imageType;
-                    return this.news[i].image[imageType];
-                }
-            }
-        }
     }
 })

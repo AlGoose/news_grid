@@ -10,21 +10,28 @@
 </head>
 
 <body>
+<div class="wrapper">
+    <div class="sidebar"></div>
     <div id="app">
+        <div class="overlay" v-if="showedNews"></div>
         <div class="grid" :style="gridStyle">
-            <div v-for="item in activeNews" v-if="item.imageExist" class="image" :style="{'grid-area': 'i' + item.id}">
-                <img :src="getImage(item.id)" :alt="item.id">
-            </div>
-            <div v-for="item in activeNews" class="text" :style="{'grid-area': 't' + item.id}">{{item.text}}</div>
+            <template v-for="item in activeNews">
+                <div @click="show(item)"  v-if="item.imageExist" class="image"
+                     :style="{'grid-area': 'i' + item.id, transition: 'all 4s ease' }">
+                    <img :src="item.image[item.template.imageType]" :alt="item.id">
+                </div>
+                <div @click="show(item)" class="text" :style="{'grid-area': 't' + item.id}">{{item.text}}</div>
+            </template>
+            <div class="popup" style="grid-column-start: 1; grid-column-end: 4; grid-row-start: 1; grid-row-end: 3"> </div>
         </div>
         <button @click="addBlock">More news!</button>
-    </div>
-
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="./vue/vue.js"></script>
-    <script src="./algorithms.js"></script>
-    <script src="./config.js"></script>
-    <script src="./app.js"></script>
+    </div>s
+</div>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="./vue/vue.js"></script>
+<script src="./algorithms.js"></script>
+<script src="./config.js"></script>
+<script src="./app.js"></script>
 </body>
 
 </html>
