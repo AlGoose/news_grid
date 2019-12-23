@@ -31,6 +31,7 @@ new Vue({
 
     watch: {
         appWidth(newValue) {
+
             GRID_SETTINGS.forEach(item => {
                 if (newValue >= item.width[0] && newValue < item.width[1]) {
                     this.gridColumnsCount = item.itemsPerRow;
@@ -149,6 +150,7 @@ new Vue({
         resize: function () {
             clearTimeout(this.timerDebounce);
             this.timerDebounce = setTimeout(() => {
+
                 this.appWidth = document.getElementById('app').offsetWidth;
             }, 300);
         },
@@ -160,6 +162,5 @@ new Vue({
             if (this.isNewsGone) return;
             this.blocksCount++;
         },
-
     }
 })

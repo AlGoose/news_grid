@@ -4,15 +4,14 @@
   grid-auto-rows: 300px;
   grid-gap: 10px;
 }
-/*
+
 .text {
   background-color: #8ca0ff;
 }
 
 .image {
   background-color: #96ff8c;
-}*/
-
+}
 
 .text, .image {
   text-align: center;
@@ -61,5 +60,4 @@ button {
     height: 100vh;
     z-index: 10;
     background-color: #00000025;
-
 }
