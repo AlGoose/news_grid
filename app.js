@@ -1,162 +1,45 @@
 new Vue({
     el: '#app',
     data: {
-        templates: [
-            {
-                pattern: ['t'],
-                imageType: 0
-            },
-            {
-                pattern: ['t', 'i'],
-                imageType: 0
-            },
-            {
-                pattern: ['i', 't'],
-                imageType: 0
-            },
-            {
-                pattern: ['i', 'i', 't'],
-                imageType: 0
-            },
-            {
-                pattern: ['t', 'i', 'i'],
-                imageType: 0
-            },
-            {
-                pattern: [
-                    ['i'],
-                    ['t']
-                ],
-                imageType: 0
-            },
-            {
-                pattern: [
-                    ['i', 't'],
-                    ['i', 't']
-                ],
-                imageType: 0
-            },
-            {
-                pattern: [
-                    ['t', 'i'],
-                    ['t', 'i']
-                ],
-                imageType: 0
-            },
-        ],
-        news: [
-            {
-                id: 1,
-                isActive: false,
-            },
-            {
-                id: 2,
-                isActive: false,
-            },
-            {
-                id: 3,
-                isActive: false,
-            },
-            {
-                id: 4,
-                isActive: false,
-            },
-            {
-                id: 5,
-                isActive: false,
-            },
-            {
-                id: 6,
-                isActive: false,
-            },
-            {
-                id: 7,
-                isActive: false,
-            },
-            {
-                id: 8,
-                isActive: false,
-            },
-            {
-                id: 9,
-                isActive: false,
-            },
-            {
-                id: 10,
-                isActive: false,
-            },
-            {
-                id: 11,
-                isActive: false,
-            },
-            {
-                id: 12,
-                isActive: false,
-            },
-            {
-                id: 13,
-                isActive: false,
-            },
-            {
-                id: 14,
-                isActive: false,
-            },
-            {
-                id: 15,
-                isActive: false,
-            },
-            {
-                id: 16,
-                isActive: false,
-            },
-            {
-                id: 17,
-                isActive: false,
-            },
-            {
-                id: 18,
-                isActive: false,
-            },
-            {
-                id: 19,
-                isActive: false,
-            },
-            {
-                id: 20,
-                isActive: false,
-            }
-        ],
+        showedNews:false,
+        news: [],
         blocksCount: 1,
         isNewsGone: false,
-        windowWidth: 0,
-        gridColumnsCount:5,
-        gridRowsCount:4,
+        appWidth: 0,
+        gridColumnsCount: 0,
+        gridRowsCount: 0,
+
     },
 
     created: function () {
-        this.windowWidth = document.documentElement.clientWidth;
+        this.appWidth = document.getElementById('app').offsetWidth;
+        ;
         window.addEventListener('resize', this.resize);
     },
+
+    mounted: function () {
+        axios
+            .get('data.json')
+            .then(response => {
+                this.news = response.data;
+                console.log(this.news);
+                this.news.forEach((item, index) => {
+                    Vue.set(this.news[index], 'isActive', false);
+                })
+            });
+    },
+
     watch: {
-        windowWidth(oldValue, newValue) {
-
-            if (newValue <= 1280) {
-                this.gridColumnsCount = 3;
-                this.gridRowsCount = 6;
-
-            }
-
-            if (newValue > 1280 && newValue <= 1440) {
-                this.gridColumnsCount = 4;
-                this.gridRowsCount = 5;
-            }
-
-            if (newValue > 1440) {
-                this.gridColumnsCount = 5;
-                this.gridRowsCount = 4;
-            }
+        appWidth(newValue) {
+            GRID_SETTINGS.forEach(item => {
+                if (newValue >= item.width[0] && newValue < item.width[1]) {
+                    this.gridColumnsCount = item.itemsPerRow;
+                    this.gridRowsCount = item.rowsCount;
+                }
+            });
         }
     },
+
     computed: {
         gridStyle() {
             return {
@@ -170,16 +53,12 @@ new Vue({
             });
         },
 
-
-
-
         gridTemplateAreas: function () {
             return gridArrayToGridString(this.gridArray);
         },
 
         gridArray: function () {
-            console.log("Here", this);
-            // debugger;
+            console.log("Here");
             let resultGrid = [];
             let newsCount = this.news.length;
             let newsCurrentIndex = 0;
@@ -204,7 +83,7 @@ new Vue({
                         if (block[blockRow][blockColumn] !== '.') continue;
 
                         /** Создаем массив, подходящих на данную позицию, шаблонов */
-                        allowTemplates = this.templates.filter(template => {
+                        allowTemplates = TEMPLATES.filter(template => {
                             return isPatternApproach(block, template.pattern, blockRow, blockColumn);
                         });
 
@@ -219,6 +98,12 @@ new Vue({
                             addPatternToGridArray(block, template.pattern, blockRow, blockColumn, this.news[newsCurrentIndex].id);
 
                             this.news[newsCurrentIndex].template = template;
+                            this.news[newsCurrentIndex].coords = {
+                                fr: blockRow + (this.blocksCount - 1) * this.gridRowsCount,
+                                lr: blockRow + template.pattern.length - 1 + (this.blocksCount - 1) * this.gridRowsCount,
+                                fc: blockColumn,
+                                lc: blockColumn + template.pattern[0].length - 1,
+                            };
                             this.news[newsCurrentIndex].imageExist = this.news[newsCurrentIndex].template.pattern.flat().includes('i');
                             this.news[newsCurrentIndex].isActive = true;
                             newsCurrentIndex++;
@@ -237,7 +122,6 @@ new Vue({
 
                 resultGrid = resultGrid.concat(block);
             }
-
             return resultGrid;
         }
     },
@@ -245,7 +129,7 @@ new Vue({
     methods: {
         srand: function (seed) {
             if (typeof seed === 'string') {
-                str = seed;
+                let str = seed;
                 seed = 0xFF;
                 for (let i = 0; i < str.length; i++) {
                     seed ^= str.charCodeAt(i);
@@ -253,6 +137,7 @@ new Vue({
             }
 
             return function (min, max) {
+                seed = Math.round(Math.random() * 10);
                 max = max || 1;
                 min = min || 0;
                 seed = (seed * 2 * 9301 + 49297) % 233280;
@@ -264,13 +149,17 @@ new Vue({
         resize: function () {
             clearTimeout(this.timerDebounce);
             this.timerDebounce = setTimeout(() => {
-                this.windowWidth = document.documentElement.clientWidth;
+                this.appWidth = document.getElementById('app').offsetWidth;
             }, 300);
         },
-
+        show(e) {
+            this.showedNews = e;
+            console.log(e)
+        },
         addBlock: function () {
             if (this.isNewsGone) return;
             this.blocksCount++;
-        }
+        },
+
     }
 })
