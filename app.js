@@ -1,147 +1,44 @@
 new Vue({
     el: '#app',
     data: {
-        news: [
-            {
-                id: 1,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 2,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 3,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 4,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 5,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 6,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 7,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 8,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 9,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 10,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 11,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 12,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 13,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 14,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 15,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 16,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 17,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 18,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 19,
-                isActive: false,
-                image: []
-            },
-            {
-                id: 20,
-                isActive: false,
-                image: []
-            }
-        ],
+        news: [],
         blocksCount: 1,
         isNewsGone: false,
-        windowWidth: 0,
+        appWidth: 0,
         gridColumnsCount: 0,
-        gridRowsCount: 0
+        gridRowsCount: 0,
+        showedNews: false,
+        // grid_column_start: 0,
+        // grid_column_end: 0,
+        // grid_row_start: 0,
+        // grid_row_end: 0,
+        gridHeight: 0,
+        imageStyle: 'left',
+        textStyle: 'right'
     },
 
     created: function () {
-        this.windowWidth = document.documentElement.clientWidth;
-        window.addEventListener('resize', this.resize); //TODO: Привязаться не к окну а к родительскому объекту (сетке?) Как?
+        this.appWidth = document.getElementById('app').offsetWidth;
+        window.addEventListener('resize', this.resize);
     },
 
     mounted: function () {
-        //FIXME: Сетка отрисовывется быстрее ответа ---> текст и картинка не отображается на старте
-        let textPromises = [];
-        axios
-            .get('https://picsum.photos/v2/list?page=1&limit=20')
-            .then(response => {
-                console.log(response.data);
-                for(let i = 0; i < response.data.length; i++) {
-                    this.news[i].image[0] = `https://picsum.photos/id/${response.data[i].id}/325/300`;
-                    this.news[i].image[1] = `https://picsum.photos/id/${response.data[i].id}/325/610`;
-                    this.news[i].image[2] = `https://picsum.photos/id/${response.data[i].id}/660/300`;
-                }
-            });
-
-        for (let i = 0; i < this.news.length; i++) {
-            textPromises.push(axios.get('https://litipsum.com/api/picture-of-dorian-gray/1'));
-        }
-        Promise.all(textPromises).then(values => {
-            console.log(values);
-            this.news.forEach((item, index) => {
-                item.text = values[index].data;
-            });
-        });
+        // axios
+        //     .get('data.json')
+        //     .then(response => {
+        //         this.news = response.data;
+        //         this.news.forEach((item, index) => {
+        //             Vue.set(this.news[index], 'isActive', false);
+        //         })
+        //     });
+        this.news = NEWS;
+        this.news.forEach((item, index) => {
+            Vue.set(this.news[index], 'isActive', false);
+        })
     },
 
     watch: {
-        windowWidth(newValue) {
+        appWidth(newValue) {
             GRID_SETTINGS.forEach(item => {
                 if (newValue >= item.width[0] && newValue < item.width[1]) {
                     this.gridColumnsCount = item.itemsPerRow;
@@ -169,7 +66,7 @@ new Vue({
         },
 
         gridArray: function () {
-            console.log("Here");
+            console.log("Render");
             let resultGrid = [];
             let newsCount = this.news.length;
             let newsCurrentIndex = 0;
@@ -181,7 +78,7 @@ new Vue({
                 }
             });
 
-            for (let i = 0; i < this.blocksCount; i++) {
+            for (let blockNumber = 0; blockNumber < this.blocksCount; blockNumber++) {
                 let block = new Array(this.gridRowsCount);
                 for (let i = 0; i < this.gridRowsCount; i++) {
                     block[i] = new Array(this.gridColumnsCount).fill('.');
@@ -209,11 +106,36 @@ new Vue({
                             addPatternToGridArray(block, template.pattern, blockRow, blockColumn, this.news[newsCurrentIndex].id);
 
                             this.news[newsCurrentIndex].template = template;
+                            this.news[newsCurrentIndex].coords = {
+                                firstRow: blockRow + 1 + blockNumber * this.gridRowsCount,
+                                lastRow: blockRow + 1 + template.pattern.length + blockNumber * this.gridRowsCount,
+                                firstColumn: blockColumn + 1,
+                                lastColumn: blockColumn + 1 + template.pattern[0].length,
+                            };
                             this.news[newsCurrentIndex].imageExist = this.news[newsCurrentIndex].template.pattern.flat().includes('i');
                             this.news[newsCurrentIndex].isActive = true;
                             newsCurrentIndex++;
                         } else {
                             this.isNewsGone = true;
+
+                            if (this.news.length > 0) {
+                                let isEmpty;
+                                let startCut = blockRow;
+
+                                for (let i = blockRow; i < this.gridRowsCount; i++) {
+                                    isEmpty = true;
+                                    for (let k = 0; k < block[i].length; k++) {
+                                        if (block[i][k] !== '.') {
+                                            isEmpty = false;
+                                            startCut = i + 1;
+                                            continue;
+                                        }
+                                    }
+                                }
+                                if (isEmpty) {
+                                    block.splice(startCut, block.length - startCut);
+                                }
+                            }
                         }
 
                         if (this.isNewsGone) {
@@ -227,7 +149,77 @@ new Vue({
 
                 resultGrid = resultGrid.concat(block);
             }
+            this.gridHeight = resultGrid.length;
             return resultGrid;
+        },
+
+        popupStyle: function () {
+            return this.popupPosition;
+            // return {
+            //     'grid-column-start': this.grid_column_start,
+            //     'grid-column-end': this.grid_column_end,
+            //     'grid-row-start': this.grid_row_start,
+            //     'grid-row-end': this.grid_row_end
+            // }
+        },
+
+        popupPosition: function () {
+            let grid_column_start = 0;
+            let grid_column_end = 0;
+            let grid_row_start = 0;
+            let grid_row_end = 0;
+
+            if (this.showedNews) {
+                if (this.showedNews.coords.firstColumn <= this.gridColumnsCount - 2) {
+                    console.log('Right');
+                    grid_column_start = this.showedNews.coords.firstColumn;
+                    grid_column_end = this.showedNews.coords.firstColumn + 3;
+
+                    this.textStyle = "right";
+                    this.imageStyle = "left";
+                } else if (this.showedNews.coords.lastColumn - 3 >= 1) {
+                    console.log('Left');
+                    grid_column_start = this.showedNews.coords.lastColumn - 3;
+                    grid_column_end = this.showedNews.coords.lastColumn;
+                    
+                    this.textStyle = "left";
+                    this.imageStyle = "right";
+                } else {
+                    console.log('Center');
+                    grid_column_start = this.showedNews.coords.firstColumn - 1;
+                    grid_column_end = this.showedNews.coords.lastColumn + 1;
+                }
+
+                if (this.showedNews.coords.firstRow <= this.gridHeight - 1) {
+                    console.log('Down');
+                    grid_row_start = this.showedNews.coords.firstRow;
+                    grid_row_end = this.showedNews.coords.firstRow + 2;
+                } else {
+                    console.log('Up');
+                    grid_row_start = this.showedNews.coords.firstRow - 1;
+                    grid_row_end = this.showedNews.coords.lastRow;
+                }
+            }
+
+
+            return {
+                'grid-column-start': grid_column_start,
+                'grid-column-end': grid_column_end,
+                'grid-row-start': grid_row_start,
+                'grid-row-end': grid_row_end
+            }
+        },
+
+        popupTextStyle: function() {
+            return {
+                'float': this.textStyle
+            }
+        },
+
+        popupImageStyle: function() {
+            return {
+                'float': this.imageStyle
+            }
         }
     },
 
@@ -253,7 +245,7 @@ new Vue({
         resize: function () {
             clearTimeout(this.timerDebounce);
             this.timerDebounce = setTimeout(() => {
-                this.windowWidth = document.documentElement.clientWidth;
+                this.appWidth = document.getElementById('app').offsetWidth;
             }, 300);
         },
 
@@ -261,15 +253,45 @@ new Vue({
             if (this.isNewsGone) return;
             this.blocksCount++;
         },
-        
-        //FIXME: Можно лучше сделать, правильнее. Как?
-        getImage: function (id) {
-            for (let i = 0; i < this.news.length; i++) {
-                if (this.news[i].id === id) {
-                    let imageType = this.news[i].template.imageType;
-                    return this.news[i].image[imageType];
-                }
-            }
+
+        showNews(news) {
+            console.log(news)
+            console.log(news.coords)
+
+            // if (news.coords.firstColumn <= this.gridColumnsCount - 2) {
+            //     console.log('Right');
+            //     this.grid_column_start = news.coords.firstColumn;
+            //     this.grid_column_end = news.coords.firstColumn + 3;
+            // } else if (news.coords.lastColumn - 3 >= 1) {
+            //     console.log('Left');
+            //     this.grid_column_start = news.coords.lastColumn - 3;
+            //     this.grid_column_end = news.coords.lastColumn;
+            // } else {
+            //     console.log('Center');
+            //     this.grid_column_start = news.coords.firstColumn - 1;
+            //     this.grid_column_end = news.coords.lastColumn + 1;
+            // }
+
+            // if (news.coords.firstRow <= this.gridHeight - 1) {
+            //     console.log('Down');
+            //     this.grid_row_start = news.coords.firstRow;
+            //     this.grid_row_end = news.coords.firstRow + 2;
+            // } else {
+            //     console.log('Up');
+            //     this.grid_row_start = news.coords.firstRow - 1;
+            //     this.grid_row_end = news.coords.lastRow;
+            // }
+
+            this.showedNews = news;
+            let popup = document.getElementsByClassName('popup')[0];
+            popup.style.display = "inline-block";
+            // popup.scrollIntoView({block: "center", behavior: "smooth"}); //TODO: Как сделать прокрутку без подсчета координат?
+        },
+
+        closeNews() {
+            this.showedNews = false;
+            let popup = document.getElementsByClassName('popup')[0];
+            popup.style.display = "none";
         }
     }
 })

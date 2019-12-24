@@ -10,19 +10,45 @@
 </head>
 
 <body>
-    <div id="app">
-        <div class="grid" :style="gridStyle">
-            <div v-for="item in activeNews" v-if="item.imageExist" class="image" :style="{'grid-area': 'i' + item.id}">
-                <img :src="getImage(item.id)" :alt="item.id">
+    <div class="wrapper">
+        <!-- <div class="sidebar"></div> -->
+        <div id="app">
+            <div class="overlay" v-if="showedNews" @click="closeNews"></div>
+            <div class="grid" :style="gridStyle">
+                
+                <template v-for="item in activeNews">
+                    <div @click="showNews(item)" v-if="item.imageExist" class="image" :style="{'grid-area': 'i' + item.id}">
+                        <img :src="item.image[item.template.imageType]" :alt="item.id">
+                    </div>
+                    <div @click="showNews(item)" class="text" :style="{'grid-area': 't' + item.id}">
+                        <h3>{{item.title}}</h3>
+                        {{item.text}}
+                    </div>
+                </template>
+                
+                <div class="popup" :style="popupStyle">
+                    <div class="popup_image" :style="popupImageStyle">
+                        <img v-if="showedNews" :src="showedNews.image[1]" alt="showedNews.id">
+                    </div>
+                    <div class="popup_text" :style="popupTextStyle">
+                        <h3>{{showedNews.title}}</h3>
+                        <p>{{showedNews.detailText}}</p>
+                        
+                        <div class="popup_footer">
+                            <p>{{showedNews.date}}</p>
+                            <button @click="closeNews">Вернуться к новостям</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div v-for="item in activeNews" class="text" :style="{'grid-area': 't' + item.id}">{{item.text}}</div>
+            <button class="more_news_button" @click="addBlock">More news!</button>
         </div>
-        <button @click="addBlock">More news!</button>
     </div>
 
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
     <script src="./vue/vue.js"></script>
     <script src="./algorithms.js"></script>
+    ,<script src="./data.js"></script>
     <script src="./config.js"></script>
     <script src="./app.js"></script>
 </body>
