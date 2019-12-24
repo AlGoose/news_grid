@@ -43,6 +43,36 @@ const TEMPLATES = [
         ],
         imageType: 1
     },
+    /** todo: Реализовать Уголки*/
+  /*  {
+        pattern: [
+            ['i', 'i'],
+            ['.', 't']
+        ],
+        imageType: 2
+    },
+    {
+        pattern: [
+            ['i', 'i'],
+            ['t', '.']
+        ],
+        imageType: 2
+    },
+    {
+        pattern: [
+            ['t', 'i'],
+            ['.', 'i']
+        ],
+        imageType: 1
+    },
+    {
+        pattern: [
+            ['i', 't'],
+            ['i', '.']
+        ],
+        imageType: 1
+    },
+    */
     {
         pattern: [
             ['t', 'i'],

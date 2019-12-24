@@ -226,7 +226,7 @@ new Vue({
     methods: {
         srand: function (seed) {
             if (typeof seed === 'string') {
-                str = seed;
+                let str = seed;
                 seed = 0xFF;
                 for (let i = 0; i < str.length; i++) {
                     seed ^= str.charCodeAt(i);
@@ -234,6 +234,7 @@ new Vue({
             }
 
             return function (min, max) {
+                seed = Math.round(Math.random() * 10);
                 max = max || 1;
                 min = min || 0;
                 seed = (seed * 2 * 9301 + 49297) % 233280;
@@ -248,7 +249,10 @@ new Vue({
                 this.appWidth = document.getElementById('app').offsetWidth;
             }, 300);
         },
-
+        show(e) {
+            this.showedNews = e;
+            console.log(e)
+        },
         addBlock: function () {
             if (this.isNewsGone) return;
             this.blocksCount++;

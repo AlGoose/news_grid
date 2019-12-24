@@ -18,7 +18,6 @@
 .text, .image {
   text-align: center;
   overflow: hidden;
-  overflow: hidden;
   font-size: 1.1em;
 }
 
