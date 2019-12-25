@@ -3,26 +3,17 @@ new Vue({
     data: {
         news: [],
         blocksCount: 1,
-        isNewsGone: false,
         appWidth: 0,
         gridColumnsCount: 0,
         gridRowsCount: 0,
-        showedNews: false,
-        // grid_column_start: 0,
-        // grid_column_end: 0,
-        // grid_row_start: 0,
-        // grid_row_end: 0,
         gridHeight: 0,
-        popup: {
-            'grid-template-areas': "'i t t' 'i t t'",
-        },
-        imageStyle: 'left',
-        textStyle: 'right'
+        showedNews: false,
+        isNewsGone: false,
+        popupGridArea: ""
     },
 
     created: function () {
         this.news = dataNews;
-        console.log(this.news, window.dataNews);
         this.appWidth = document.getElementById('app').offsetWidth;
         window.addEventListener('resize', this.resize);
     },
@@ -33,15 +24,16 @@ new Vue({
             .then(response => {
                 if (response.data.status == 200) {
                     this.news = response.data.result;
+
+                    console.log(response.data);
+
                     this.news.forEach((item, index) => {
                         Vue.set(this.news[index], 'isActive', false);
-                    })
+                    });
+
+                    console.log(this.news);
                 }
             });
-        // this.news = NEWS;
-        // this.news.forEach((item, index) => {
-        //     Vue.set(this.news[index], 'isActive', false);
-        // })
     },
 
     watch: {
@@ -53,13 +45,13 @@ new Vue({
                 }
             });
         },
+
         showedNews(news) {
             if (news) {
-                /*     Vue.nextTick(function () {
-                         // теперь DOM обновлён
-                         let popup = document.getElementsByClassName('popup')[0];
-                         popup.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
-                     })*/
+                Vue.nextTick(function () {
+                    let popup = document.getElementsByClassName('popup')[0];
+                    popup.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+                })
             }
         }
     },
@@ -107,10 +99,20 @@ new Vue({
                     for (let blockColumn = 0; blockColumn < this.gridColumnsCount; blockColumn++) {
                         if (block[blockRow][blockColumn] !== '.') continue;
 
-                        /** Создаем массив, подходящих на данную позицию, шаблонов */
-                        allowTemplates = TEMPLATES.filter(template => {
-                            return isPatternApproach(block, template.pattern, blockRow, blockColumn);
-                        });
+                        if (blockNumber === 0 && blockRow === 0 && blockColumn === 0) {
+                            allowTemplates = [{
+                                pattern: [
+                                    ['i', 't'],
+                                    ['i', 't']
+                                ],
+                                imageType: 'v'
+                            }];
+                        } else {
+                            /** Создаем массив, подходящих на данную позицию, шаблонов */
+                            allowTemplates = TEMPLATES.filter(template => {
+                                return isPatternApproach(block, template.pattern, blockRow, blockColumn);
+                            });
+                        }
 
                         /**Смотрим есть ли новость в пуле */
                         if (newsCurrentIndex < newsCount) {
@@ -171,14 +173,19 @@ new Vue({
         },
 
         popupStyle: function () {
-            return {...this.popupPosition, ...this.popup};
+            return { ...this.popupPosition, ...this.popupGridStyle };
+        },
 
-            // return {
-            //     'grid-column-start': this.grid_column_start,
-            //     'grid-column-end': this.grid_column_end,
-            //     'grid-row-start': this.grid_row_start,
-            //     'grid-row-end': this.grid_row_end
-            // }
+        popupGridStyle: function () {
+            if (this.popupGridArea === 'left') {
+                return {
+                    'grid-template-areas': "'i t t' 'i t t'"
+                }
+            } else {
+                return {
+                    'grid-template-areas': "'t t i' 't t i'"
+                }
+            }
         },
 
         popupPosition: function () {
@@ -193,19 +200,19 @@ new Vue({
                     grid_column_start = this.showedNews.coords.firstColumn;
                     grid_column_end = this.showedNews.coords.firstColumn + 3;
 
-                    this.textStyle = "right";
-                    this.imageStyle = "left";
+                    this.popupGridArea = 'left';
                 } else if (this.showedNews.coords.lastColumn - 3 >= 1) {
                     console.log('Left');
                     grid_column_start = this.showedNews.coords.lastColumn - 3;
                     grid_column_end = this.showedNews.coords.lastColumn;
 
-                    this.textStyle = "left";
-                    this.imageStyle = "right";
+                    this.popupGridArea = 'right';
                 } else {
                     console.log('Center');
                     grid_column_start = this.showedNews.coords.firstColumn - 1;
                     grid_column_end = this.showedNews.coords.lastColumn + 1;
+
+                    this.popupGridArea = 'left';
                 }
 
                 if (this.showedNews.coords.firstRow <= this.gridHeight - 1) {
@@ -224,18 +231,6 @@ new Vue({
                 'grid-column-end': grid_column_end,
                 'grid-row-start': grid_row_start,
                 'grid-row-end': grid_row_end
-            }
-        },
-
-        popupTextStyle: function () {
-            return {
-                'float': this.textStyle
-            }
-        },
-
-        popupImageStyle: function () {
-            return {
-                'float': this.imageStyle
             }
         }
     },
@@ -266,10 +261,11 @@ new Vue({
                 this.appWidth = document.getElementById('app').offsetWidth;
             }, 300);
         },
+
         show(e) {
             this.showedNews = e;
-            console.log(e)
         },
+
         addBlock: function () {
             if (this.isNewsGone) return;
             this.blocksCount++;
