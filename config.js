@@ -3,110 +3,81 @@ const TEMPLATES = [
         pattern: [
             ['t']
         ],
-        imageType: 0
+        imageType: 'q'
     },
     {
         pattern: [
             ['t', 'i']
         ],
-        imageType: 0
+        imageType: 'q'
     },
     {
         pattern: [
             ['i', 't']
         ],
-        imageType: 0
+        imageType: 'q'
     },
     {
         pattern: [
             ['i', 'i', 't']
         ],
-        imageType: 2
+        imageType: 'h'
     },
     {
         pattern: [
             ['t', 'i', 'i']
         ],
-        imageType: 2
+        imageType: 'h'
     },
     {
         pattern: [
             ['i'],
             ['t']
         ],
-        imageType: 0
+        imageType: 'q'
     },
     {
         pattern: [
             ['i', 't'],
             ['i', 't']
         ],
-        imageType: 1
+        imageType: 'v'
     },
-    /** todo: Реализовать Уголки*/
-  /*  {
-        pattern: [
-            ['i', 'i'],
-            ['.', 't']
-        ],
-        imageType: 2
-    },
-    {
-        pattern: [
-            ['i', 'i'],
-            ['t', '.']
-        ],
-        imageType: 2
-    },
-    {
-        pattern: [
-            ['t', 'i'],
-            ['.', 'i']
-        ],
-        imageType: 1
-    },
-    {
-        pattern: [
-            ['i', 't'],
-            ['i', '.']
-        ],
-        imageType: 1
-    },
-    */
+
     {
         pattern: [
             ['t', 'i'],
             ['t', 'i']
         ],
-        imageType: 1
+        imageType: 'v'
     },
     {
         pattern: [
             ['i', 'i'],
             ['.', 't']
         ],
-        imageType: 2
+        imageType: 'h'
     },
     {
         pattern: [
             ['i', 'i'],
             ['t', '.']
         ],
-        imageType: 2
+        imageType: 'h'
     },
     {
         pattern: [
             ['t', 'i'],
             ['.', 'i']
         ],
-        imageType: 1
+        imageType: 'v'
     },
     {
         pattern: [
             ['i', 't'],
             ['i', '.']
         ],
-        imageType: 1
+        imageType: 'v'
     },
 ];
 

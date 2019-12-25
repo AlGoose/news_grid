@@ -13,28 +13,35 @@ new Vue({
         // grid_row_start: 0,
         // grid_row_end: 0,
         gridHeight: 0,
+        popup: {
+            'grid-template-areas': "'i t t' 'i t t'",
+        },
         imageStyle: 'left',
         textStyle: 'right'
     },
 
     created: function () {
+        this.news = dataNews;
+        console.log(this.news, window.dataNews);
         this.appWidth = document.getElementById('app').offsetWidth;
         window.addEventListener('resize', this.resize);
     },
 
     mounted: function () {
-        // axios
-        //     .get('data.json')
-        //     .then(response => {
-        //         this.news = response.data;
-        //         this.news.forEach((item, index) => {
-        //             Vue.set(this.news[index], 'isActive', false);
-        //         })
-        //     });
-        this.news = NEWS;
-        this.news.forEach((item, index) => {
-            Vue.set(this.news[index], 'isActive', false);
-        })
+        axios
+            .get('https://www.zkabel.ru/api/news/get/')
+            .then(response => {
+                if (response.data.status == 200) {
+                    this.news = response.data.result;
+                    this.news.forEach((item, index) => {
+                        Vue.set(this.news[index], 'isActive', false);
+                    })
+                }
+            });
+        // this.news = NEWS;
+        // this.news.forEach((item, index) => {
+        //     Vue.set(this.news[index], 'isActive', false);
+        // })
     },
 
     watch: {
@@ -45,10 +52,20 @@ new Vue({
                     this.gridRowsCount = item.rowsCount;
                 }
             });
+        },
+        showedNews(news) {
+            if (news) {
+                /*     Vue.nextTick(function () {
+                         // теперь DOM обновлён
+                         let popup = document.getElementsByClassName('popup')[0];
+                         popup.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+                     })*/
+            }
         }
     },
 
     computed: {
+
         gridStyle() {
             return {
                 'grid-template-areas': this.gridTemplateAreas,
@@ -154,7 +171,8 @@ new Vue({
         },
 
         popupStyle: function () {
-            return this.popupPosition;
+            return {...this.popupPosition, ...this.popup};
+
             // return {
             //     'grid-column-start': this.grid_column_start,
             //     'grid-column-end': this.grid_column_end,
@@ -181,7 +199,7 @@ new Vue({
                     console.log('Left');
                     grid_column_start = this.showedNews.coords.lastColumn - 3;
                     grid_column_end = this.showedNews.coords.lastColumn;
-                    
+
                     this.textStyle = "left";
                     this.imageStyle = "right";
                 } else {
@@ -201,7 +219,6 @@ new Vue({
                 }
             }
 
-
             return {
                 'grid-column-start': grid_column_start,
                 'grid-column-end': grid_column_end,
@@ -210,13 +227,13 @@ new Vue({
             }
         },
 
-        popupTextStyle: function() {
+        popupTextStyle: function () {
             return {
                 'float': this.textStyle
             }
         },
 
-        popupImageStyle: function() {
+        popupImageStyle: function () {
             return {
                 'float': this.imageStyle
             }
@@ -234,7 +251,7 @@ new Vue({
             }
 
             return function (min, max) {
-                seed = Math.round(Math.random() * 10);
+                //     seed = Math.round(Math.random() * 10);
                 max = max || 1;
                 min = min || 0;
                 seed = (seed * 2 * 9301 + 49297) % 233280;
@@ -259,43 +276,11 @@ new Vue({
         },
 
         showNews(news) {
-            console.log(news)
-            console.log(news.coords)
-
-            // if (news.coords.firstColumn <= this.gridColumnsCount - 2) {
-            //     console.log('Right');
-            //     this.grid_column_start = news.coords.firstColumn;
-            //     this.grid_column_end = news.coords.firstColumn + 3;
-            // } else if (news.coords.lastColumn - 3 >= 1) {
-            //     console.log('Left');
-            //     this.grid_column_start = news.coords.lastColumn - 3;
-            //     this.grid_column_end = news.coords.lastColumn;
-            // } else {
-            //     console.log('Center');
-            //     this.grid_column_start = news.coords.firstColumn - 1;
-            //     this.grid_column_end = news.coords.lastColumn + 1;
-            // }
-
-            // if (news.coords.firstRow <= this.gridHeight - 1) {
-            //     console.log('Down');
-            //     this.grid_row_start = news.coords.firstRow;
-            //     this.grid_row_end = news.coords.firstRow + 2;
-            // } else {
-            //     console.log('Up');
-            //     this.grid_row_start = news.coords.firstRow - 1;
-            //     this.grid_row_end = news.coords.lastRow;
-            // }
-
             this.showedNews = news;
-            let popup = document.getElementsByClassName('popup')[0];
-            popup.style.display = "inline-block";
-            // popup.scrollIntoView({block: "center", behavior: "smooth"}); //TODO: Как сделать прокрутку без подсчета координат?
         },
 
         closeNews() {
             this.showedNews = false;
-            let popup = document.getElementsByClassName('popup')[0];
-            popup.style.display = "none";
         }
     }
 })
